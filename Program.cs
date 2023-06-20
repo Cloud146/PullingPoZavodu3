@@ -805,5 +805,1914 @@ namespace PullingPoZavodu3
             Console.WriteLine("Высота конуса={0}", hk);
             Console.WriteLine("Угол конуса={0}", alf);
         }
+        //На вход: нарДиам, допуНарДиам, внутрДиам, допуВнутрДиам, высота, радиус, толщЛенты, верхДопТолщ, нижДопТолщ, угол верхн. конуса, угол нижн. конуса
+        //На выход: Диам. Верхн. конуса, Диам. Нижн. Конуса, Высота вехрн.,нижн. конусов, Углы верхн.,нижн. конусов, Радиус входн. верх. конуса, Радиус сопр. конусов, Усилие свертки
+        public static void двухконМатр()
+        {
+            // Define constants
+            double mum = 0.05;
+            double Pi = Math.PI;
+
+            // Read input values
+            double d0 = double.Parse(Console.ReadLine());
+            double d1 = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double dm1 = double.Parse(Console.ReadLine());
+            double rp = double.Parse(Console.ReadLine());
+            double s = double.Parse(Console.ReadLine());
+            double ms1 = double.Parse(Console.ReadLine());
+            double s1 = double.Parse(Console.ReadLine());
+            double rps = rp + s / 2;
+            double sigmb = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+            double sd = double.Parse(Console.ReadLine());
+
+            // Calculate recommended angle for upper cone
+            if (sd > 0.012 && sd < 0.018)
+            {
+                string werhugol = "30 degrees";
+                Console.WriteLine("Recommended angle for upper cone = " + werhugol);
+            }
+            else if (sd > 0.018 && sd < 0.05)
+            {
+                string werhugol = "45 degrees";
+                Console.WriteLine("Recommended angle for upper cone = " + werhugol);
+            }
+
+            double alfw = double.Parse(Console.ReadLine());
+            double alfn = double.Parse(Console.ReadLine());
+
+            // Convert angles to radians
+            double alw = Pi * alfw / 180;
+            double alf = Pi * alfn / 180;
+
+            double dk = d1 * Math.Sqrt((1 / (md1 * md1) - 1 - 2.28 * rps / d1 + 0.07 * alfn * rps / d1 + 0.56 * (rps / d1) * (rps / d1)) * Math.Sin(alf) + 1);
+            dk = Math.Round(dk, 1);
+            double hk = (dk - dm1) / 2 / Math.Tan(alf);
+            hk = Math.Round(hk, 1);
+            double dw = 0.9 * d0;
+            dw = Math.Round(dw, 1);
+            double hw = (dw - dk) / (2 * Math.Tan(alw));
+            hw = Math.Round(hw, 1);
+            double rw = 0.05 * d0;
+            rw = Math.Round(rw, 1);
+            double rs = (d0 - dm1) / 3;
+            rs = Math.Round(rs, 1);
+            double r = (d0 - d1) / 2;
+            double md12 = d1 / dk;
+            double md11 = dk / d0;
+            double fik = (alw - alf) / 2;
+            double psi = 1 - dk / d0;
+            double psisr = 1 - Math.Sqrt(md1);
+
+            double sigms = sigmb * Math.Pow(psisr / psir, psir / (1 - psir)) / (1 - psir);
+            sigms = Math.Round(sigms, 1);
+            double sigmr = 1.1 * sigms * (((1 + mum / Math.Tan(alw)) * (Math.Log(1 / md11) - psi) + s / (2 * d1 * Math.Sqrt(md11))) * (1 + mum * fik) + Math.Log(1 / md12));
+            sigmr = Math.Round(sigmr, 1);
+
+            if (ms1 == 1)
+            {
+                // усилие при свертке без утонения
+                double pbu = Pi * d1 * s * sigmr;
+                pbu = Math.Round(pbu, 0);
+                Console.WriteLine("Усилие свертки = " + pbu + " kg"); // Только для консоли
+            }
+            else
+            {
+                double sigms2 = sigmas2(sigmb, md1, ms1, psir);
+                sigms2 = Math.Round(sigms2, 1);
+                double sigmz = sigmaz(mum, sigmr, sigms2, alf, ms1);
+                sigmz = Math.Round(sigmz, 1);
+                //усилие при свертке с утонением
+                double pu = Pi * d1 * s * sigmz;
+                pu = Math.Round(pu, 0);
+                // конечная стадия
+                double msk = ms1 * Math.Sqrt(md1);
+                double sigmrk = 0;
+                double sigms2k = sigmas2(sigmb, md1, msk, psir);
+                sigms2k = Math.Round(sigms2k, 1);
+                double sigmzk = sigmazk(mum, msk, alf, sigms2k);
+                sigmzk = Math.Round(sigmzk, 1);
+                double pk = Pi * d1 * s * sigmzk;
+                pk = Math.Round(pk, 0);
+                Console.WriteLine("Final stage");
+                Console.WriteLine("sigms = " + sigms2k + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmzk + " kg / mm^2");
+                Console.WriteLine("Force of rolling = " + pk + " kg");
+            }
+            Console.WriteLine("sigms = " + sigms + " kg / mm^2");
+            Console.WriteLine("sigmr = " + sigmr + " kg / mm^2");
+
+            Console.WriteLine("Двухконус. матрица");
+            Console.WriteLine("Диам. верхнего конуса", dw);
+            Console.WriteLine("Диаметр нижнего конуса", dk);
+            Console.WriteLine("Высота верхнего конуса", hw);
+            Console.WriteLine("Высота нижнего конуса", hk);
+            Console.WriteLine("Угол верхнего конуса", alfw);
+            Console.WriteLine("угол нижнего конуса", alfn);
+            Console.WriteLine("Радиус входн.верх конуса", rw);
+            Console.WriteLine("Радиус сопряж. конусов", rs);
+        }
+
+        //На вход: нарДиам, допуНарДиам, внутрДиам, допуВнутрДиам, высота, радиус, толщЛенты, верхДопТолщ, нижДопТолщ
+        //На выход: sigmas, sigmaz, Усилие свертки, Усилие свертки в конечной стадии, Радиус матрицы, Тип прижима(Плоский или плоский и торцевой)
+        public static void радМатрПриж()
+        {
+            // Define the constants.
+            const double mum = 0.05;
+            const double Pi = Math.PI;
+
+            // Get the values from the Excel spreadsheet.
+            double d0 = double.Parse(Console.ReadLine());
+            double d1 = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double dm1 = double.Parse(Console.ReadLine());
+            double rp = double.Parse(Console.ReadLine());
+            double s = double.Parse(Console.ReadLine());
+            double ms1 = double.Parse(Console.ReadLine());
+            double s1 = double.Parse(Console.ReadLine());
+            double rps = rp + s / 2;
+            double sigmb = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+            double sd = double.Parse(Console.ReadLine());
+
+            // Calculate the radius of the matrix.
+            double rms = 0.69 * d1 * (0.16 * Math.Sqrt(18.3 / md1 * md1 + 21.2 + 10.2 * (rps / d1) * (rps / d1) - 41.3 * rps / d1) - 1);
+            double rm = rms - s1 / 2;
+            rm = Math.Round(rm, 1);
+
+            // Calculate the reduced modulus of deformation.
+            double md11 = (d1 + 2 * rms) / d0;
+            double md12 = md1 / md11;
+            double alr = Math.Atan2(Math.Sqrt((rm + s) * (rm + s) - (rm + s1) * (rm + s1)), rm + s1);
+            double fi = Pi / 2 - alr;
+            double al = alr / 2;
+            double psisr = 1 - Math.Sqrt(md1);
+            double sigms = sigmb * (psisr / psir) * Math.Pow(psir / (1 - psir), 1 / (1 - psir)) / (1 - psir);
+            sigms = Math.Round(sigms, 1);
+
+            // Calculate the shear modulus.
+            double a = Math.Log(1 / md1) + s / (4 * rm);
+            double b = 1 + 1.5 * mum;
+            double c = 0.2 * mum * b / md1;
+            double d = 1 - 18 * sd / (1 - md1);
+            double sigmr = 1.1 * sigms * a * b / (1 - c * d);
+            sigmr = Math.Round(sigmr, 1);
+
+            // Calculate the rolling force without thinning.
+            double pbu;
+
+            // Calculate the rolling force with thinning.
+            if (ms1 == 1)
+            {
+                //усилие при свертке без утонения.
+                pbu = Pi * d1 * s * sigmr;
+                pbu = Math.Round(pbu, 0);
+                Console.WriteLine("sigms = " + sigms + " kg / mm^2");
+                Console.WriteLine("sigmr = " + sigmr + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pbu + " kg");
+            }
+            else
+            {
+                double sigms2 = sigmas2(sigmb, md1, ms1, psir);
+                sigms2 = Math.Round(sigms2, 1);
+                double sigmz = sigmaz(mum, sigmr, sigms2, al, ms1);
+                sigmz = Math.Round(sigmz, 1);
+                //усилие при свертке с утонением
+                double pu = Pi * d1 * s1 * sigmz;
+                pu = Math.Round(pu, 0);
+                //конечная стадия
+                // Calculate the rolling force with thinning in the final stage.
+                double msk = ms1 * Math.Sqrt(md1);
+                double sigmrk = 0;
+                double sigms2k = sigmas2(sigmb, md1, msk, psir);
+                sigms2k = Math.Round(sigms2k, 1);
+                double sigmzk = sigmazk(mum, msk, al, sigms2k);
+                sigmzk = Math.Round(sigmzk, 1);
+                //усилие при свертке с утонением в конечн. стадии
+                double pk = Pi * d1 * s1 * sigmzk;
+                pk = Math.Round(pk, 0);
+
+                Console.WriteLine("sigms = " + sigms2 + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmz + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pu + " kg");
+                Console.WriteLine("конечная стадия");
+                Console.WriteLine("sigms = " + sigms2k + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmzk + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pk + " kg");
+            }
+
+            Console.WriteLine("Радиальная матрица с прижимом");
+            if (sd < (1 - psir * Math.Log(1 / md1) - md1) / 20)
+            {
+                Console.WriteLine("Требуется плоский и торцевой прижим");
+            }
+            else
+            {
+                Console.WriteLine("Плоский прижим");
+            }
+            Console.WriteLine("Радиус матрицы = " + rm);
+        }
+
+        //На вход: нарДиам, допуНарДиам, внутрДиам, допуВнутрДиам, высота, радиус, толщЛенты, верхДопТолщ, нижДопТолщ
+        //На выход: sigmas, sigmaz, Усилие свертки, Усилие свертки в конечной стадии, Радиус матрицы
+        public static void радМатрБезПриж()
+        {
+            // Define the variables.
+            double mum = 0.05;
+            double Pi = Math.PI;
+            double d0 = double.Parse(Console.ReadLine());
+            double d1 = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double dm1 = double.Parse(Console.ReadLine());
+            double rp = double.Parse(Console.ReadLine());
+            double s = double.Parse(Console.ReadLine());
+            double ms1 = double.Parse(Console.ReadLine());
+            double s1 = double.Parse(Console.ReadLine());
+            double rps = rp + s / 2;
+            double sigmb = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+            double sd = double.Parse(Console.ReadLine());
+
+            // Calculate the radius of the matrix.
+            double rms = d1 * (1 - md1) / (2 * md1);
+            double rm = rms - s1 / 2;
+            rm = Math.Round(rm, 1);
+
+            // Calculate the other parameters.
+            double fig = 200 * (1 - md1 * (1 + 2.28 * rps / d1)) / (1 + md1 * (5 - 6 * md1));
+            double fi = Pi * fig / 180;
+            double md11 = md1 * (1 + 2 * rms * (1 - Math.Cos(fi)) / d1);
+            double md12 = md1 / md11;
+            double alr = Math.Atan(Math.Sqrt((rm + s) * (rm + s) - (rm + s1) * (rm + s1)) / (rm + s1));
+            double al = alr / 2;
+            double psisr = 1 - Math.Sqrt(md1);
+            double sigms = sigmb * (psisr / psir) * Math.Pow(psir / (1 - psir), 1 / (1 - psir)) / (1 - psir);
+            sigms = Math.Round(sigms, 1);
+            double sigmr = 1.1 * sigms * (1 + mum * fi) * Math.Log(1 / md12);
+            sigmr = Math.Round(sigmr, 1);
+
+            // Calculate the required forces.
+            double pbu, pu;
+            if (ms1 == 1)
+            {
+                //усилие при свертке без утонения
+                pbu = Pi * d1 * s * sigmr;
+                pbu = Math.Round(pbu, 0);
+                Console.WriteLine("sigms = " + sigms + " kg / mm^2");
+                Console.WriteLine("sigmr = " + sigmr + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pbu + " kg");
+            }
+            else
+            {
+                double sigms2 = sigmas2(sigmb, md1, ms1, psir);
+                sigms2 = Math.Round(sigms2, 1);
+                double sigmz = sigmaz(mum, sigmr, sigms2, al, ms1);
+                sigmz = Math.Round(sigmz, 1);
+                //усилие при свертке с утонением
+                pu = Pi * d1 * s1 * sigmz;
+                pu = Math.Round(pu, 0);
+                // конечная стадия
+                double msk = ms1 * Math.Sqrt(md1);
+                double sigmrk = 0;
+                double sigms2k = sigmas2(sigmb, md1, msk, psir);
+                sigms2k = Math.Round(sigms2k, 1);
+                double sigmzk = sigmazk(mum, msk, al, sigms2k);
+                sigmzk = Math.Round(sigmzk, 1);
+                //усилие при свертке с утонением в конечн. стадии
+                double pk = Pi * d1 * s1 * sigmzk;
+                pk = Math.Round(pk, 0);
+
+                Console.WriteLine("sigms = " + sigms2 + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmz + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pu + " kg");
+                Console.WriteLine("конечная стадия");
+                Console.WriteLine("sigms = " + sigms2k + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmzk + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pk + " kg");
+            }
+
+            // Print the results.
+            Console.WriteLine("Радиальная матрица с прижимом");
+            if (sd < (1 - psir * Math.Log(1 / md1) - md1) / 20)
+            {
+                Console.WriteLine("Требуется плоский и торцевой прижим");
+            }
+            else
+            {
+                Console.WriteLine("Плоский прижим");
+            }
+            Console.WriteLine("Радиус матрицы = " + rm);
+        }
+        //На вход: Тип матрицы (Коническая, Радиальная), Тип матрицы (Однокон., Двухкон., Однокон. с радиус.), sd, md1, psir
+        //На выход: РАЗВЕТВЛЕНИЕ ПО МЕТОДАМ
+        public static void ВырСвертка(string[] args)
+        {
+
+            // Get the values from the user
+            Console.WriteLine("Введите тип матрицы: матрица конич.-K, радиальная-R");
+            string tipMatriz = Console.ReadLine();
+            double sd = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+
+            // Check if the squeeze is needed
+            if (sd > (1 - md1) / 18)
+            {
+                Console.WriteLine("прижим не нужен на кон. и рад. матр");
+            }
+            else if (sd > (1 - md1) / 36)
+            {
+                Console.WriteLine("на конич. матр. прижим не нужен");
+            }
+            else
+            {
+                Console.WriteLine("нужен прижим");
+            }
+
+            // Check the type of matrix
+            if (tipMatriz == "k")
+            {
+                if (sd > 0.012 && sd < 0.05)
+                {
+                    Console.WriteLine("Рекомендуется двухконусная матрица");
+                }
+                else if (sd > 0.05)
+                {
+                    Console.WriteLine("Рекомендуется одноконусная матрица с большим радиусом");
+                }
+
+                // Check if the squeeze is needed for conical matrix
+                if (sd <= (1 - md1) / 36)
+                {
+                    Console.WriteLine("одноконМатрПрижим");
+                }
+                else
+                {
+                    Console.WriteLine("матрица однокон.-O, двухкон.-D, однокон. с радиус-OR");
+                    string tipKonMatriz = Console.ReadLine();
+
+                    if (tipKonMatriz == "o")
+                    {
+                        Console.WriteLine("одноконМатрБезПриж");
+                    }
+                    else if (tipKonMatriz == "d")
+                    {
+                        Console.WriteLine("двухконМатр");
+                    }
+                    else if (tipKonMatriz == "or")
+                    {
+                        Console.WriteLine("одноконМатрРадиус");
+                    }
+                }
+            }
+            else if (tipMatriz == "r")
+            {
+                if (sd > (1 - md1) / 18)
+                {
+                    Console.WriteLine("радМатрБезПриж");
+                }
+                else
+                {
+                    Console.WriteLine("радМатрПрижим");
+                }
+            }
+        }
+
+        //На вход: нарДиам, допуНарДиам, внутрДиам, допуВнутрДиам, высота, радиус, толщЛенты, верхДопТолщ, нижДопТолщ
+        //На выход: sigmas, sigmaz, Усилие свертки, Усилие свертки в конечной стадии, Диам. Конуса, Высота конуса, Угол Конуса, Радиус Конуса
+        public static void одноконМатрРадиус(string[] args)
+        {
+            // Define constants
+            double mum = 0.05;
+            double Pi = Math.PI;
+
+            // Get input values
+            double d0 = double.Parse(Console.ReadLine());
+            double d1 = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double dm1 = double.Parse(Console.ReadLine());
+            double rp = double.Parse(Console.ReadLine());
+            double s = double.Parse(Console.ReadLine());
+            double ms1 = double.Parse(Console.ReadLine());
+            double s1 = double.Parse(Console.ReadLine());
+            double rps = rp + s / 2;
+            double sigmb = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+            double sd = double.Parse(Console.ReadLine());
+            //Введи угол  конуса
+            double alfn = double.Parse(Console.ReadLine());
+            double alf = Pi * alfn / 180;
+
+            // Calculate values
+            double dk = d1 * Math.Sqrt((1 / md1 * md1 - 1 - 2.28 * rps / d1 + 0.07 * alfn * rps / d1 + 0.56 * (rps / d1) * (rps / d1)) * Math.Sin(alf) + 1);
+            dk = Math.Round(dk, 1);
+            double hk = (dk - dm1) / 2 / Math.Tan(alf);
+            hk = Math.Round(hk, 1);
+            double md11 = dk / d0;
+            double a = md11 + sd;
+            double b = (1 - Math.Sin(alf)) * Math.Tan(alf);
+            double hm = (a * (1 - b) + b - sd * ms1 - md1) * d0 / (2 * Math.Tan(alf));
+            hm = Math.Round(hm, 1);
+            double c = hm - hk;
+            if (c < 0)
+            {
+                Console.WriteLine("высота матр. меньше высоты конуса");
+                return;
+            }
+            double dkm = dm1 + 2 * hm * Math.Tan(alf);
+            dkm = Math.Round(dkm, 1);
+            double md12 = d1 / dk;
+            double rw = (d0 - dk - s) / 2;
+            rw = Math.Round(rw, 1);
+            double psi = 1 - dk / d0;
+            double psisr = 1 - Math.Sqrt(md1);
+            double sigms = sigmb * Math.Pow((psisr / psir), (psir / (1 - psir))) / (1 - psir);
+            sigms = Math.Round(sigms, 1);
+            double sigmr = 1.1 * sigms * (1 + mum / Math.Tan(alf)) * Math.Log(1 / md12);
+            sigmr = Math.Round(sigmr, 1);
+            if (ms1 == 1)
+            {
+                // усилие при свертке без утонения
+                double pbu = Math.PI * d1 * s * sigmr;
+                pbu = Math.Round(pbu, 0);
+                Console.WriteLine("sigms = " + sigms + " kg / mm^2");
+                Console.WriteLine("sigmr = " + sigmr + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pbu + " kg");
+            }
+            else
+            {
+                double sigms2 = sigmas2(sigmb, md1, ms1, psir);
+                sigms2 = Math.Round(sigms2, 1);
+                double sigmz = sigmaz(mum, sigmr, sigms2, alf, ms1);
+                sigmz = Math.Round(sigmz, 1);
+                //усилие при свертке с утонением
+                double pu = Pi * d1 * s1 * sigmz;
+                pu = Math.Round(pu, 0);
+                // конечная стадия
+                double msk = ms1 * Math.Sqrt(md1);
+                double sigmrk = 0;
+                double sigms2k = sigmas2(sigmb, md1, msk, psir);
+                sigms2k = Math.Round(sigms2k, 1);
+                double sigmzk = sigmazk(mum, msk, alf, sigms2k);
+                sigmzk = Math.Round(sigmzk, 1);
+                //усилие при свертке с утонением в конечн. стадии
+                double pk = Pi * d1 * s1 * sigmzk;
+                pk = Math.Round(pk, 0);
+
+                Console.WriteLine("sigms = " + sigms2 + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmz + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pu + " kg");
+                Console.WriteLine("конечная стадия");
+                Console.WriteLine("sigms = " + sigms2k + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmzk + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pk + " kg");
+            }
+            Console.WriteLine("Диам.  конуса=" + dkm);
+            Console.WriteLine("Высота конуса=" + hm);
+            Console.WriteLine("угол  конуса=" + alfn);
+            Console.WriteLine("радиус конуса=" + rw);
+        }
+
+        //На вход: Количество матриц
+        //На выход: Углы конустности матриц
+        public static void УголКонусМатр(string[] args)
+        {
+            // Define constants
+            double Pi = Math.PI;
+
+            // Get input values
+            int n = int.Parse(Console.ReadLine());
+            double mum = 0.05;
+
+            // Create arrays to store the input values
+            double[] s = new double[n - 1];
+            double[] d = new double[n - 1];
+            double[] md = new double[n - 1];
+
+            // Get the input values and store them in the arrays
+            for (int i = 0; i < n - 1; i++)
+            {
+                s[i] = double.Parse(Console.ReadLine());
+                d[i] = double.Parse(Console.ReadLine());
+                md[i] = double.Parse(Console.ReadLine());
+            }
+
+            // Calculate the angles
+            for (int i = 0; i < n - 1; i++)
+            {
+                double a = Math.Sqrt(0.76 * mum * Math.Log(1 / md[i]) * Math.Sqrt(d[i] / s[i]));
+                double b = Math.Asin(a);
+                double alf = 180 * b / Pi;
+                alf = Math.Round(alf, 0);
+                Console.WriteLine("alf={0}", alf);
+            }
+        }
+        //На вход: Количество матриц
+        //На выход: Высоты конустности матриц
+        public static void ВысотаКонусаМатр(string[] args)
+        {
+            // Define constants
+            double Pi = Math.PI;
+
+            // Get input values
+            int n = int.Parse(Console.ReadLine());
+
+            // Create arrays to store the input values
+            double[] dm = new double[n - 1];
+            double[] alf = new double[n - 1];
+
+            // Get the input values and store them in the arrays
+            for (int i = 0; i < n - 1; i++)
+            {
+                dm[i] = double.Parse(Console.ReadLine());
+            }
+
+            // Get the input radius
+            //Введи радиус вход. конуса матр
+            double r = double.Parse(Console.ReadLine());
+
+            // Calculate the heights
+            for (int i = 1; i < n - 1; i++)
+            {
+                alf[i] = double.Parse(Console.ReadLine());
+                double al = Pi * alf[i] / 180;
+                double hm = (dm[i - 1] - dm[i]) / 2 / Math.Tan(al) + r * (1 - Math.Sin(al));
+                double dkm = dm[i - 1] + 2 * r * (1 - Math.Sin(al)) * Math.Tan(al);
+                dkm = Math.Round(dkm, 1);
+                hm = Math.Round(hm, 1);
+                Console.WriteLine("hm={0}", hm);
+                Console.WriteLine("dkm={0}", dkm);
+                Console.WriteLine("r={0}", r);
+            }
+        }
+        //На вход: md, sigmamb, psir
+        //На выход: sigms
+        public static void ВытБезУтон()
+        {
+            // Define constants
+            double Pi = Math.PI;
+            double md = double.Parse(Console.ReadLine());
+            double sigmb = double.Parse(Console.ReadLine());
+            double psisr = double.Parse(Console.ReadLine());
+            // Calculate the stress
+            double psir = 1 - Math.Sqrt(md);
+            double sigms = sigmb * Math.Pow((psisr / psir), (psir / (1 - psir))) / (1 - psir);
+            sigms = Math.Round(sigms, 1);
+            Console.WriteLine("sigms={0}", sigms);
+        }
+        //На вход: Массивы alf, md, ms, s, dsr
+        //На выход: sigmz, sigms2, p и sigms2k, sigmzk, pk
+        static void УсилиеВытяжки()
+        {
+            // Define constants
+            const double Pi = Math.PI;
+            const double mum = 0.05;
+
+            // Get the number of iterations
+            int n = int.Parse(Console.ReadLine());
+
+            // Get the material properties
+            double sigmb = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+
+            // Create arrays to store the data
+            double[] alf = new double[n - 1];
+            double[] md = new double[n - 1];
+            double[] ms = new double[n - 1];
+            double[] s = new double[n];
+            double[] dsr = new double[n];
+
+            // Read the data from the console
+            for (int i = 0; i < n - 1; i++)
+            {
+                alf[i] = double.Parse(Console.ReadLine());
+                md[i] = double.Parse(Console.ReadLine());
+                ms[i] = double.Parse(Console.ReadLine());
+            }
+            for (int i = 0; i < n; i++)
+            {
+                s[i] = double.Parse(Console.ReadLine());
+                dsr[i] = double.Parse(Console.ReadLine());
+            }
+
+            // Calculate the results
+            for (int i = 0; i < n - 1; i++)
+            {
+                // Convert the angle from degrees to radians
+                double alfaRad = alf[i] * Pi / 180;
+
+                if (ms[i] < 1)
+                {
+                    // Calculate the yield stresses
+                    double sigms1 = sigmas1(sigmb, md[i], psir);
+                    double sigms2 = sigmas2(sigmb, md[i], ms[i], psir);
+                    sigms2 = Math.Round(sigms2, 1);
+
+                    // Calculate the reduced yield stresses
+                    double sigmr1 = 1.1 * sigms1 * sigmar1(alfaRad, md[i], s[i - 1], dsr[i - 1]);
+                    double sigr1 = sigmar1(alfaRad, md[i], s[i - 1], dsr[i - 1]);
+
+                    // Calculate the bursting stresses
+                    double sigmz = sigmaz2(ms[i], alfaRad, sigr1, sigms2);
+                    sigmz = Math.Round(sigmz, 1);
+
+                    // Calculate the bursting forces
+                    double pst = pste(dsr[i], s[i], sigmz);
+                    double ptr = Pi * ptre(ms[i], dsr[i], s[i], alfaRad, sigms2, sigr1);
+                    double p = pst + ptr;
+                    p = Math.Round(p, 0);
+
+                    //конец вытяжки с утонением
+                    double msk = s[i] * Math.Sqrt(md[i]) / s[i - 1];
+                    double sigms2k = sigmas2(sigmb, md[i], msk, psir);
+                    sigms2k = Math.Round(sigms2k, 1);
+                    double sigmr1k = 0;
+                    double sigmzk = sigmaz2(msk, alfaRad, sigr1, sigms2k);
+                    sigmzk = Math.Round(sigmzk, 1);
+                    double pstk = pste(dsr[i], s[i], sigmzk);
+                    double ptrk = Pi * ptre(msk, dsr[i], s[i], alfaRad, sigms2k, sigr1);
+                    double pk = pstk + ptrk;
+                    pk = Math.Round(pk, 0);
+                    Console.WriteLine("p = " + p);
+                    Console.WriteLine("sigmz = " + sigmz);
+                    Console.WriteLine("sigms2 = " + sigms2);
+                    Console.WriteLine("pk = " + pk);
+                    Console.WriteLine("sigmzk = " + sigmzk);
+                    Console.WriteLine("sigms2k = " + sigms2k);
+                }
+                else if (ms[i] == 1)
+                {
+                    double psisr = 1 - Math.Pow(md[i], 2);
+                    double sigms = sigmb * Math.Pow(psisr / psir, psir / (1 - psir)) / (1 - psir);
+                    double sigmr = 1.1 * sigms * sigmar1(alfaRad, md[i], s[i - 1], dsr[i - 1]);
+                    double p = Pi * dsr[i] * s[i] * sigmr;
+                    sigms = Math.Round(sigms, 1);
+                    sigmr = Math.Round(sigmr, 1);
+                    p = Math.Round(p, 0);
+                    Console.WriteLine("p = " + p);
+                    Console.WriteLine("sigmr = " + sigmr);
+                    Console.WriteLine("sigms = " + sigms);
+                }
+            }
+        }
+        //На вход: alf, md, s, dsr
+        //На выход: sigmar1
+        public static double sigmar1(double alf, double md, double s, double dsr)
+        {
+            double mum = 0.05;
+            return (1 + mum / Math.Tan(alf)) * Math.Log(1 / md) + 0.66 * Math.Sin(alf) * Math.Sqrt(s / dsr);
+        }
+        //На вход: double ms, double alf, double sigmr1, double sigms2
+        //На выход: sigmaz2
+        public static double sigmaz2(double ms, double alf, double sigmr1, double sigms2)
+        {
+            double mum = 0.05;
+            double mup = 0.05;
+            double ks = 1 / ms;
+            double a = 1 - 0.5 * Math.Log(ks) - sigmr1;
+            double b = 0.5 * (Math.Log(ks)) * (Math.Log(ks)) - sigmr1 * (ks - 1 - Math.Log(ks));
+            return 1.15 * sigms2 * (Math.Log(ks) + mum * a * Math.Log(ks) / Math.Sin(alf) - mup * b / Math.Sin(alf) + sigmr1 + (1 - Math.Cos(alf)) / Math.Sin(alf));
+        }
+        //На вход: d, s, sigmz
+        //На выход: pste
+        public static double pste(double d, double s, double sigmz)
+        {
+            double Pi = Math.PI;
+            return Pi * d * s * sigmz;
+        }
+        //На вход: double ms, double d, double s, double alf, double sigms2, double sigmr1
+        //На выход: ptre
+        public static double ptre(double ms, double d, double s, double alf, double sigms2, double sigmr1)
+        {
+            double ks = 1 / ms;
+            double a = Math.Log(ks) - sigmr1 * (ks - 1);
+            return 1.15 * 0.05 * sigms2 * d * s * a / Math.Sin(alf);
+        }
+        //На вход: sigmb, md, psir
+        //На выход: sigmas1
+        public static double sigmas1(double sigmb, double md, double psir)
+        {
+            return sigmb * Math.Pow(((1 - md) / psir), (psir / (1 - psir)));
+        }
+        //На вход:  narDiam,  dopuNarZiam,  vnutrDiam, dopuVnutrDiam, vysota,  tolshchLenty,  verhDopTolst,  nizDopTolst,  radius
+        //На выход: D0KolpShtBezUt
+        public static double D0KolpShtBezUt(double narDiam, double dopuNarZiam, double vnutrDiam, double dopuVnutrDiam, double vysota, double tolshchLenty, double verhDopTolst, double nizDopTolst, double radius)
+        {
+            double dn = narDiam + dopuNarZiam / 2;
+            double dw = vnutrDiam + dopuVnutrDiam / 2;
+            double h = vysota;
+            double s = tolshchLenty + (verhDopTolst + nizDopTolst) / 2;
+            double r = radius;
+            double Pi = Math.PI;
+            double vcil = Pi * (dn + dw) * s * (h - s - r) / 2;
+            double vdno = Pi * s * (dw - 2 * r) * (dw - 2 * r) / 4;
+            double vtor = Pi * Pi * (dw / 2 - r) * ((r + s) * (r + s) - r * r) / 2;
+            double v = vcil + vdno + vtor;
+            double d0KolpShtBezUt = Math.Sqrt(4 * v / Pi / s);
+            return Math.Round(d0KolpShtBezUt, 2);
+        }
+        //На вход: md1, sd, psir, тип матрицы(Коническая или Радиальная) и Двухкон. или Однокон.
+        //На выход: РАЗВЕТВЛЕНИЕ и ТИП ПРИЖИМА
+        static void вырСверт2матр()
+        {
+            // Get the values from the user.
+            Console.WriteLine("Enter the value of md1:");
+            double md1 = Convert.ToDouble(Console.ReadLine());
+
+            Console.WriteLine("Enter the value of sd:");
+            double sd = Convert.ToDouble(Console.ReadLine());
+
+            Console.WriteLine("Enter the value of psir:");
+            double psir = Convert.ToDouble(Console.ReadLine());
+
+            // Check if the shear stress is greater than (1 - md1) / 18.
+            if (sd > (1 - md1) / 18)
+            {
+                Console.WriteLine("прижим не нужен на кон. и рад. матр");
+            }
+            else if (sd > (1 - md1) / 36)
+            {
+                Console.WriteLine("на конич. матр. прижим не нужен");
+            }
+            else
+            {
+                Console.WriteLine("нужен прижим");
+            }
+
+            // Get the type of matrix from the user.
+            Console.WriteLine("Enter the type of matrix (матрица конич.-K, радиальная-R):");
+            string tipMatriz = Console.ReadLine();
+
+            // Check if the matrix type is conical.
+            if (tipMatriz == "k")
+            {
+                if (sd > 0.012 && sd < 0.05)
+                {
+                    Console.WriteLine("Рекомендуется двухконусная матрица");
+                }
+                else if (sd > 0.05)
+                {
+                    Console.WriteLine("Рекомендуется одноконусная матрица с большим радиусом");
+                }
+
+                // Check if the shear stress is less than or equal to (1 - md1) / 36.
+                if (sd <= (1 - md1) / 36)
+                {
+                    одноконМатрПрижим2матр();
+                }
+                else
+                {
+                    Console.WriteLine("матрица однокон.-O, двухкон.-D, однокон. с радиус-OR");
+                    string tipKonMatriz = Console.ReadLine();
+                    if (tipKonMatriz == "o")
+                    {
+                        одноконМатрБезПриж2матр();
+                    }
+                    else if (tipKonMatriz == "d")
+                    {
+                        двухконМатр2матр();
+                    }
+                    else if (tipKonMatriz == "or")
+                    {
+                        одноконМатрРадиус2матр();
+                    }
+                }
+            }
+            // Check if the matrix type is radial.
+            else if (tipMatriz == "r")
+            {
+                if (sd > (1 - md1) / 18)
+                {
+                    радМатрБезПриж2матр();
+                }
+                else
+                {
+                    радМатрПрижим2матр();
+                }
+            }
+        }
+        //На вход: нарДиам, допуНарДиам, внутрДиам, допуВнутрДиам, высота, радиус, толщЛенты, верхДопТолщ, нижДопТолщ, Угол Конуст. Верхней матрицы, Коеф. утонения на верх. матр.
+        //На выход: усилие свертки, конечная стадия, sigms, sigmz, диам.верх. матр, коэф. утон.верх. матр, коэф. утон.ниж. матр
+        //угол конус.ниж.матр, радиус конус.ниж.матр, диам. конус.ниж.матр, высота конус.ниж.матр, расст. между поясками матр, sigmsn, sigmzn, усилие на нижней матр
+        // Диаметр входн.кромки конуса, Радиус входн.кромки конуса, Высота конуса, Угол конуса
+        public static void одноконМатрПрижим2матр()
+        {
+            // Get the input values.
+            double Pi = Math.PI;
+            double d0 = double.Parse(Console.ReadLine());
+            double d1 = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double rp = double.Parse(Console.ReadLine());
+            double s = double.Parse(Console.ReadLine());
+            double rps = rp + s / 2;
+            double sigmb = double.Parse(Console.ReadLine());
+            double dm1n = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+            double sd = double.Parse(Console.ReadLine());
+
+            // Get the user input for the angle of cone of the upper matrix.
+            Console.WriteLine("Введи угол конусности верх. матрицы");
+            double alf = double.Parse(Console.ReadLine());
+            double al = Pi * alf / 180;
+
+            double ms1 = double.Parse(Console.ReadLine());
+            // Calculate the average coefficient of thinning.
+            double ms1sr = Math.Sqrt(ms1);
+            Console.WriteLine("Средний коэф. утонен=" + ms1sr);
+
+            // Get the user input for the coefficient of thinning of the upper matrix.
+            Console.WriteLine("Введи коэф. утонен. на верх. матр");
+            double ms1w = double.Parse(Console.ReadLine());
+
+            double ms1n;
+            // Calculate the coefficient of thinning of the lower matrix.
+            //нижняя матрица
+            if (ms1w == 1)
+            {
+                ms1n = ms1;
+            }
+            else
+            {
+                ms1n = ms1 / ms1w;
+                ms1n = Math.Round(ms1n, 3);
+            }
+
+            // Set the coefficient of thinning of the upper matrix.
+            ms1 = ms1w;
+            double s1 = s * ms1;
+
+            // Get the user input for the diameter of the punch.
+            double dp = double.Parse(Console.ReadLine());
+
+            // Calculate the diameter of the upper matrix.
+            double dm1;
+            if (ms1w == 1)
+            {
+                dm1 = dp + 1.5 * s1 / Math.Sqrt(md1);
+                d1 = (dm1 + dp) / 2;
+            }
+            else
+            {
+                d1 = dp + s1;
+                dm1 = dp + 2 * s1;
+            }
+            dm1 = Math.Round(dm1, 2);
+            md1 = d1 / d0;
+
+            // Calculate the coefficient of friction.
+            double mum = 0.05;
+
+            // Calculate the angle of cone of the lower matrix.
+            double q = Math.Sqrt(2 * mum * Math.Log(1 / ms1n) * (1 - Math.Log(1 / ms1n)));
+            double alfan = Math.Asin(q);
+            double alfn = alfan * 180 / Pi;
+            alfn = Math.Round(alfn, 0);
+
+            // Get the user input for the radius of the inlet cone of the lower matrix.
+            Console.WriteLine("Введи радиус вход. конуса нижн. матр");
+            double rn = double.Parse(Console.ReadLine());
+
+            // Calculate the height of the inlet cone of the lower matrix.
+            double hmn = (dm1 - dm1n) / 2 / Math.Tan(alfan) + rn * (1 - Math.Sin(alfan));
+            double dkmn = dm1 + 2 * rn * (1 - Math.Sin(alfan)) * Math.Tan(alfan);
+            dkmn = Math.Round(dkmn, 1);
+            hmn = Math.Round(hmn, 1);
+
+            //расстояние между матрицами
+            // Calculate the distance between the matrices.
+            double perw = 1 / Math.Pow(md1, 2) - 1 - 2.28 * rps / d1 + 0.56 * (rps / d1) * Math.Pow(rps / d1, 2);
+            double wtor = Math.Sqrt(1 - Math.Pow(ms1w, 2) + 2 * rps * (1 - ms1w) / s);
+            double tret = ms1w * (1 - ms1n) / Math.Tan(alfan) - (1 / md1 - Math.Pow(ms1w, 2)) / (4 * ms1w * Math.Tan(al));
+            double rast = 0.25 * d1 * perw / ms1w + s * (wtor + tret);
+            rast = Math.Round(rast, 1);
+
+            // Calculate the geometry of the upper matrix
+            double dk = d1 * Math.Sqrt((1 / md1 * md1 - 1 - 2.28 * rps / d1 + 0.07 * alf * rps / d1 + 0.56 * (rps / d1) * (rps / d1)) * Math.Sin(Math.PI * alf / 180) + 1);
+            dk = Math.Round(dk, 1);
+            double hk = (dk - dm1) / 2 / Math.Tan(al);
+            hk = Math.Round(hk, 1);
+            double rw = 3 * s;
+            double rws = rw + s / 2;
+
+            // Calculate the force on the upper matrix
+            double md12 = d1 / dk;
+            double md11 = dk / d0;
+            double psi = 1 - dk / d0;
+            double fik = Math.PI * (90 - alf) / 180;
+            double psisr = 1 - Math.Sqrt(md1);
+            double sigms = sigmb * Math.Pow((psisr / psir), (psir / (1 - psir)) / (1 - psir));
+            sigms = Math.Round(sigms, 1);
+            double a = Math.Log(1 / md11) - psi + s / (2 * rws * Math.Pow(md11, 2));
+            double b = 1 + mum * fik;
+            double c = 1 - 18 * sd / (1 - md1);
+            double sigmr = 1.1 * sigms * (a * b / (1 - 0.2 * mum * b * c / md1) + Math.Log(1 / md12));
+            sigmr = Math.Round(sigmr, 1);
+            //усилие вытяжки на нижней матрице
+            double psisrn = 1 - 0.5 * md1 * ms1w * (1 + ms1n);
+            double sigmsn = sigmb * (psisrn / psir) * Math.Pow(psir / (1 - psir), 1 / (1 - psir)) / (1 - psir);
+            double sigmzn = sigmsn * (Math.Log(1 / ms1n) + alfan / 2 + mum * (1 - Math.Log(1 / ms1n) * Math.Log(1 / ms1n)) / alfan);
+            double sn = s * ms1w * ms1n;
+            double pn = Math.PI * (dp + sn) * sn * sigmzn;
+            pn = Math.Round(pn, 0);
+            sigmsn = Math.Round(sigmsn, 1);
+            sigmzn = Math.Round(sigmzn, 1);
+            if (ms1sr == 1)
+            {
+                //усилие при свертке без утонения
+                double pbu = Pi * d1 * s * sigmr;
+                pbu = Math.Round(pbu, 0);
+                Console.WriteLine("sigms = " + sigms + " kg / mm^2");
+                Console.WriteLine("sigmr = " + sigmr + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pbu + " kg");
+            }
+            else
+            {
+                double sigms2 = sigmas2(sigmb, md1, ms1, psir);
+                sigms2 = Math.Round(sigms2, 1);
+                double sigmz = sigmaz(mum, sigmr, sigms2, al, ms1);
+                sigmz = Math.Round(sigmz, 1);
+                double pu = Pi * d1 * s1 * sigmz;
+                //усилие при свертке с утонением;
+                pu = Math.Round(pu, 0);
+                double msk = ms1 * Math.Sqrt(md1);
+                //конечная стадия;
+                double sigmrk = 0;
+                double sigms2k = sigmas2(sigmb, md1, msk, psir);
+                sigms2k = Math.Round(sigms2k, 1);
+                double sigmzk = sigmazk(mum, msk, al, sigms2k);
+                sigmzk = Math.Round(sigmzk, 1);
+                double pk = Pi * d1 * s1 * sigmzk;
+                //усилие при свертке с утонением в конечн. стадии;
+                pk = Math.Round(pk, 0);
+                Console.WriteLine("sigms = " + sigms2 + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmz + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pu + " kg");
+                Console.WriteLine("конечная стадия");
+                Console.WriteLine("sigms = " + sigms2k + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmzk + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pk + " kg");
+            }
+            Console.WriteLine("диам.верх. матр.= " + dm1);
+            Console.WriteLine("коэф. утон.верх. матр = " + ms1w);
+            Console.WriteLine("коэф. утон.ниж. матр = " + ms1n);
+            Console.WriteLine("угол конус.ниж.матр = " + alfn);
+            Console.WriteLine("радиус конус.ниж.матр = " + rn);
+            Console.WriteLine("диам. конус.ниж.матр = " + dkmn);
+            Console.WriteLine("высота конус.ниж.матр = " + hmn);
+            Console.WriteLine("расст. между поясками матр = " + rast);
+            Console.WriteLine("sigmsn = " + sigmsn + " kg / mm^2");
+            Console.WriteLine("sigmzn = " + sigmzn + " kg / mm^2");
+            Console.WriteLine("усилие на нижней матр = " + pn + " kg");
+
+            Console.WriteLine("Одноконус.с приж.через 2 матр.");
+            double ustKonus = (Math.Sqrt((20 * sd) * (20 * sd) * (1 - Math.Sin(al)) + Math.Sin(al) * Math.Sin(al)) - 20 * sd) / Math.Sin(al);
+            //проверка на склакообразованиие в конусе матрицы
+            if (md1 < ustKonus)
+            {
+                Console.WriteLine("Однокон.с плоск.и КОНИЧ. приж. через 2 матр.");
+            }
+
+            Console.WriteLine("Диаметр входн.кромки конуса = " + dk);
+            Console.WriteLine("Радиус входн.кромки конуса = " + rw);
+            Console.WriteLine("Высота конуса = " + hk);
+            Console.WriteLine("Угол конуса = " + alf);
+        }
+        //На вход: нарДиам, допуНарДиам, внутрДиам, допуВнутрДиам, высота, радиус, толщЛенты, верхДопТолщ, нижДопТолщ, Угол Конуст. Верхней матрицы, Коеф. утонения на верх. матр.
+        //На выход: усилие свертки, конечная стадия, sigms, sigmz, диам.верх. матр, коэф. утон.верх. матр, коэф. утон.ниж. матр
+        //угол конус.ниж.матр, радиус конус.ниж.матр, диам. конус.ниж.матр, высота конус.ниж.матр, расст. между поясками матр, sigmsn, sigmzn, усилие на нижней матр
+        // Диаметр входн.кромки конуса, Радиус входн.кромки конуса, Высота конуса, Угол конуса
+        public static void одноконМатрБезПриж2матр()
+        {
+            // Get the input values.
+            double Pi = Math.PI;
+            double d0 = double.Parse(Console.ReadLine());
+            double d1 = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double rp = double.Parse(Console.ReadLine());
+            double s = double.Parse(Console.ReadLine());
+            double rps = rp + s / 2;
+            double sigmb = double.Parse(Console.ReadLine());
+            double dm1n = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+            double sd = double.Parse(Console.ReadLine());
+
+            // Get the user input for the angle of cone of the upper matrix.
+            Console.WriteLine("Введи угол конусности верх. матрицы");
+            double alf = double.Parse(Console.ReadLine());
+            double al = Pi * alf / 180;
+
+            double ms1 = double.Parse(Console.ReadLine());
+            // Calculate the average coefficient of thinning.
+            double ms1sr = Math.Sqrt(ms1);
+            Console.WriteLine("Средний коэф. утонен=" + ms1sr);
+
+            // Get the user input for the coefficient of thinning of the upper matrix.
+            Console.WriteLine("Введи коэф. утонен. на верх. матр");
+            double ms1w = double.Parse(Console.ReadLine());
+
+            double ms1n;
+            // Calculate the coefficient of thinning of the lower matrix.
+            //нижняя матрица
+            if (ms1w == 1)
+            {
+                ms1n = ms1;
+            }
+            else
+            {
+                ms1n = ms1 / ms1w;
+                ms1n = Math.Round(ms1n, 3);
+            }
+
+            // Set the coefficient of thinning of the upper matrix.
+            ms1 = ms1w;
+            double s1 = s * ms1;
+
+            // Get the user input for the diameter of the punch.
+            double dp = double.Parse(Console.ReadLine());
+
+            // Calculate the diameter of the upper matrix.
+            double dm1;
+            if (ms1w == 1)
+            {
+                dm1 = dp + 1.5 * s1 / Math.Sqrt(md1);
+                d1 = (dm1 + dp) / 2;
+            }
+            else
+            {
+                d1 = dp + s1;
+                dm1 = dp + 2 * s1;
+            }
+            dm1 = Math.Round(dm1, 2);
+            md1 = d1 / d0;
+
+            // Calculate the coefficient of friction.
+            double mum = 0.05;
+
+            // Calculate the angle of cone of the lower matrix.
+            double q = Math.Sqrt(2 * mum * Math.Log(1 / ms1n) * (1 - Math.Log(1 / ms1n)));
+            double alfan = Math.Asin(q);
+            double alfn = alfan * 180 / Pi;
+            alfn = Math.Round(alfn, 0);
+
+            // Get the user input for the radius of the inlet cone of the lower matrix.
+            Console.WriteLine("Введи радиус вход. конуса нижн. матр");
+            double rn = double.Parse(Console.ReadLine());
+
+            // Calculate the height of the inlet cone of the lower matrix.
+            double hmn = (dm1 - dm1n) / 2 / Math.Tan(alfan) + rn * (1 - Math.Sin(alfan));
+            double dkmn = dm1 + 2 * rn * (1 - Math.Sin(alfan)) * Math.Tan(alfan);
+            dkmn = Math.Round(dkmn, 1);
+            hmn = Math.Round(hmn, 1);
+
+            //расстояние между матрицами
+            // Calculate the distance between the matrices.
+            double perw = 1 / Math.Pow(md1, 2) - 1 - 2.28 * rps / d1 + 0.56 * (rps / d1) * Math.Pow(rps / d1, 2);
+            double wtor = Math.Sqrt(1 - Math.Pow(ms1w, 2) + 2 * rps * (1 - ms1w) / s);
+            double tret = ms1w * (1 - ms1n) / Math.Tan(alfan) - (1 / md1 - Math.Pow(ms1w, 2)) / (4 * ms1w * Math.Tan(al));
+            double rast = 0.25 * d1 * perw / ms1w + s * (wtor + tret);
+            rast = Math.Round(rast, 1);
+
+            // Calculate the geometry of the upper matrix
+            double dk = 0.9 * d0;
+            dk = Math.Round(dk, 1);
+            double hk = (dk - dm1) / 2 / Math.Tan(al);
+            hk = Math.Round(hk, 1);
+            double rw = 0.5 * d0;
+            double rws = rw + s / 2;
+            double dkk = d1 * Math.Sqrt((1 / Math.Pow(md1, 2) - 1 - 2.28 * rps / d1 + 0.07 * alf * rps / d1 + 0.56 * (rps / d1) * (rps / d1)) * Math.Sin(Math.PI * alf / 180) + 1);
+
+
+            // Calculate the force on the upper matrix
+            double md12 = d1 / dkk;
+            double md11 = dkk / d0;
+            double psi = 1 - dkk / d0;
+            double psisr = 1 - Math.Sqrt(md1);
+            double sigms = sigmb * Math.Pow((psisr / psir), (psir / (1 - psir)) / (1 - psir));
+            sigms = Math.Round(sigms, 1);
+
+            double sigmr = 1.1 * sigms * (1 + mum / Math.Tan(al)) * Math.Log(1 / md12);
+            sigmr = Math.Round(sigmr, 1);
+            double psisrn = 1 - 0.5 * md1 * ms1w * (1 + ms1n);
+            double sigmsn = sigmb * Math.Pow((psisrn / psir), (psir / (1 - psir)) / (1 - psir));
+            double sigmzn = sigmsn * (Math.Log(1 / ms1n) + alfan / 2 + mum * (1 - Math.Log(1 / ms1n) * Math.Log(1 / ms1n)) / alfan);
+            double sn = s * ms1w * ms1n;
+            double pn = Math.PI * (dp + sn) * sn * sigmzn;
+            pn = Math.Round(pn, 0);
+            sigmsn = Math.Round(sigmsn, 1);
+            sigmzn = Math.Round(sigmzn, 1);
+            if (ms1 == 1)
+            {
+                //усилие при свертке без утонения
+                double pbu = Pi * d1 * s * sigmr;
+                pbu = Math.Round(pbu, 0);
+                Console.WriteLine("sigms = " + sigms + " kg / mm^2");
+                Console.WriteLine("sigmr = " + sigmr + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pbu + " kg");
+            }
+            else
+            {
+                double sigms2 = sigmas2(sigmb, md1, ms1, psir);
+                sigms2 = Math.Round(sigms2, 1);
+                double sigmz = sigmaz(mum, sigmr, sigms2, al, ms1);
+                sigmz = Math.Round(sigmz, 1);
+                double pu = Pi * d1 * s1 * sigmz;
+                //усилие при свертке с утонением;
+                pu = Math.Round(pu, 0);
+                double msk = ms1 * Math.Sqrt(md1);
+                //конечная стадия;
+                double sigmrk = 0;
+                double sigms2k = sigmas2(sigmb, md1, msk, psir);
+                sigms2k = Math.Round(sigms2k, 1);
+                double sigmzk = sigmazk(mum, msk, al, sigms2k);
+                sigmzk = Math.Round(sigmzk, 1);
+                double pk = Pi * d1 * s1 * sigmzk;
+                //усилие при свертке с утонением в конечн. стадии;
+                pk = Math.Round(pk, 0);
+                Console.WriteLine("sigms = " + sigms2 + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmz + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pu + " kg");
+                Console.WriteLine("конечная стадия");
+                Console.WriteLine("sigms = " + sigms2k + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmzk + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pk + " kg");
+            }
+            Console.WriteLine("диам.верх. матр.= " + dm1);
+            Console.WriteLine("коэф. утон.верх. матр = " + ms1w);
+            Console.WriteLine("коэф. утон.ниж. матр = " + ms1n);
+            Console.WriteLine("угол конус.ниж.матр = " + alfn);
+            Console.WriteLine("радиус конус.ниж.матр = " + rn);
+            Console.WriteLine("диам. конус.ниж.матр = " + dkmn);
+            Console.WriteLine("высота конус.ниж.матр = " + hmn);
+            Console.WriteLine("расст. между поясками матр = " + rast);
+            Console.WriteLine("sigmsn = " + sigmsn + " kg / mm^2");
+            Console.WriteLine("sigmzn = " + sigmzn + " kg / mm^2");
+            Console.WriteLine("усилие на нижней матр = " + pn + " kg");
+
+            Console.WriteLine("Одноконус.матр.без приж.через 2 матр");
+            Console.WriteLine("Диаметр входн.кромки конуса = " + dk);
+            Console.WriteLine("Радиус входн.кромки конуса = " + rw);
+            Console.WriteLine("Высота конуса = " + hk);
+            Console.WriteLine("Угол конуса = " + alf);
+        }
+        //На вход: нарДиам, допуНарДиам, внутрДиам, допуВнутрДиам, высота, радиус, толщЛенты, верхДопТолщ, нижДопТолщ, Средний коеф. утонения, Коеф. утонения на верх. матр., 
+        //радиус вход. конуса нижн. матр, угол верх. конуса, угол нижнего конуса
+        //На выход: усилие свертки, конечная стадия, sigms, sigmz, диам.верх. матр, коэф. утон.верх. матр, коэф. утон.ниж. матр
+        //угол конус.ниж.матр, радиус конус.ниж.матр, диам. конус.ниж.матр, высота конус.ниж.матр, расст. между поясками матр, sigmsn, sigmzn, усилие на нижней матр
+        // Диаметры конусов, Радиус входн.кромки конуса, Высоты конусов, Углы конусов, Радиус сопряж. конусов
+        public static void двухконМатр2матр()
+        {
+            // Get the input values.
+            double mum = 0.05;
+            double Pi = Math.PI;
+            double d0 = double.Parse(Console.ReadLine());
+            double d1 = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double dm1n = double.Parse(Console.ReadLine());
+            double rp = double.Parse(Console.ReadLine());
+            double s = double.Parse(Console.ReadLine());
+            double ms1 = double.Parse(Console.ReadLine());
+            double rps = rp + s / 2;
+            double sigmb = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+
+            // Calculate the average coefficient of thinning.
+            double ms1sr = Math.Sqrt(ms1);
+            Console.WriteLine("Средний коэф. утонен=" + ms1sr);
+
+            // Get the user input for the coefficient of thinning of the upper matrix.
+            Console.WriteLine("Введи коэф. утонен. на верх. матр");
+            double ms1w = double.Parse(Console.ReadLine());
+
+            double ms1n;
+            // Calculate the coefficient of thinning of the lower matrix.
+            //нижняя матрица
+            if (ms1w == 1)
+            {
+                ms1n = ms1;
+            }
+            else
+            {
+                ms1n = ms1 / ms1w;
+                ms1n = Math.Round(ms1n, 3);
+            }
+
+            // Set the coefficient of thinning of the upper matrix.
+            ms1 = ms1w;
+            double s1 = s * ms1;
+
+            // Get the user input for the diameter of the punch.
+            double dp = double.Parse(Console.ReadLine());
+
+            // Calculate the diameter of the upper matrix.
+            double dm1;
+            if (ms1w == 1)
+            {
+                dm1 = dp + 1.5 * s1 / Math.Sqrt(md1);
+                d1 = (dm1 + dp) / 2;
+            }
+            else
+            {
+                d1 = dp + s1;
+                dm1 = dp + 2 * s1;
+            }
+            dm1 = Math.Round(dm1, 2);
+            md1 = d1 / d0;
+
+            // Calculate the angle of cone of the lower matrix.
+            double q = Math.Sqrt(2 * mum * Math.Log(1 / ms1n) * (1 - Math.Log(1 / ms1n)));
+            double alfanm = Math.Asin(q);
+            double alfnm = alfanm * 180 / Pi;
+            alfnm = Math.Round(alfnm, 0);
+
+            // Get the user input for the radius of the inlet cone of the lower matrix.
+            Console.WriteLine("Введи радиус вход. конуса нижн. матр");
+            double rn = double.Parse(Console.ReadLine());
+
+            // Calculate the height of the inlet cone of the lower matrix.
+            double hmn = (dm1 - dm1n) / 2 / Math.Tan(alfanm) + rn * (1 - Math.Sin(alfanm));
+            double dkmn = dm1 + 2 * rn * (1 - Math.Sin(alfanm)) * Math.Tan(alfanm);
+            dkmn = Math.Round(dkmn, 1);
+            hmn = Math.Round(hmn, 1);
+
+            //геометрия верхней матрицы
+            double sd = double.Parse(Console.ReadLine());
+            double werhugol;
+            if (sd > 0.012 && sd < 0.018)
+            {
+                werhugol = 30;
+                Console.WriteLine("Рекомендуемый угол верх. конуса = " + werhugol);
+            }
+            else if (sd > 0.0018 && sd < 0.05)
+            {
+                werhugol = 45;
+                Console.WriteLine("Рекомендуемый угол верх. конуса = " + werhugol);
+            }
+            Console.WriteLine("Введи угол верх. конуса");
+            double alfw = double.Parse(Console.ReadLine());
+            Console.WriteLine("Введи угол нижнего. конуса");
+            double alfn = double.Parse(Console.ReadLine());
+            double alw = Pi * alfw / 180;
+            double alf = Pi * alfn / 180;
+
+            //расстояние между матрицами
+            // Calculate the distance between the matrices.
+            double perw = 1 / Math.Pow(md1, 2) - 1 - 2.28 * rps / d1 + 0.56 * (rps / d1) * Math.Pow(rps / d1, 2);
+            double wtor = Math.Sqrt(1 - Math.Pow(ms1w, 2) + 2 * rps * (1 - ms1w) / s);
+            double tret = ms1w * (1 - ms1n) / Math.Tan(alfanm) - (1 / md1 - Math.Pow(ms1w, 2)) / (4 * ms1w * Math.Tan(alf));
+            double rast = 0.25 * d1 * perw / ms1w + s * (wtor + tret);
+            rast = Math.Round(rast, 1);
+
+            // Calculate the geometry of the upper matrix
+            double dk = d1 * Math.Sqrt((1 / md1 * md1 - 1 - 2.28 * rps / d1 + 0.07 * alfn * rps / d1 + 0.56 * (rps / d1) * (rps / d1)) * Math.Sin(alf) + 1);
+            dk = Math.Round(dk, 1);
+            double hk = (dk - dm1) / 2 / Math.Tan(alf);
+            hk = Math.Round(hk, 1);
+            double dw = 0.9 * d0;
+            dw = Math.Round(dw, 1);
+            double hw = (dw - dk) / (2 * Math.Tan(alw));
+            hw = Math.Round(hw, 1);
+            double rw = 0.5 * d0;
+            rw = Math.Round(rw, 1);
+            double rs = (d0 - dm1) / 3;
+            rs = Math.Round(rs, 1);
+            double r = (d0 - d1) / 5;
+
+            // Calculate the force on the upper matrix
+            double md12 = d1 / dk;
+            double md11 = dk / d0;
+            double fik = (alw + alf) / 2;
+            double psi = 1 - dk / d0;
+            double psisr = 1 - Math.Sqrt(md1);
+
+            double sigms = sigmb * Math.Pow((psisr / psir), (psir / (1 - psir)) / (1 - psir));
+            sigms = Math.Round(sigms, 1);
+            double sigmr = 1.1 * sigms * (((1 + mum / Math.Tan(alw)) * (Math.Log(1 / md11) - psi) + s / (2 * r * Math.Sqrt(md11))) * (1 + mum * fik) + Math.Log(1 / md12));
+            sigmr = Math.Round(sigmr, 1);
+            //усилие вытяжки на нижней матрице
+            double psisrn = 1 - 0.5 * md1 * ms1w * (1 + ms1n);
+            double sigmsn = sigmb * Math.Pow((psisrn / psir), (psir / (1 - psir)) / (1 - psir));
+            double sigmzn = sigmsn * (Math.Log(1 / ms1n) + alfanm / 2 + mum * (1 - Math.Log(1 / ms1n) * Math.Log(1 / ms1n)) / alfanm);
+            double sn = s * ms1w * ms1n;
+            double pn = Math.PI * (dp + sn) * sn * sigmzn;
+            pn = Math.Round(pn, 0);
+            sigmsn = Math.Round(sigmsn, 1);
+            sigmzn = Math.Round(sigmzn, 1);
+            if (ms1 == 1)
+            {
+                //усилие при свертке без утонения
+                double pbu = Pi * d1 * s * sigmr;
+                pbu = Math.Round(pbu, 0);
+                Console.WriteLine("sigms = " + sigms + " kg / mm^2");
+                Console.WriteLine("sigmr = " + sigmr + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pbu + " kg");
+            }
+            else
+            {
+                double sigms2 = sigmas2(sigmb, md1, ms1, psir);
+                sigms2 = Math.Round(sigms2, 1);
+                double sigmz = sigmaz(mum, sigmr, sigms2, alf, ms1);
+                sigmz = Math.Round(sigmz, 1);
+                double pu = Pi * d1 * s1 * sigmz;
+                //усилие при свертке с утонением;
+                pu = Math.Round(pu, 0);
+                double msk = ms1 * Math.Sqrt(md1);
+                //конечная стадия;
+                double sigmrk = 0;
+                double sigms2k = sigmas2(sigmb, md1, msk, psir);
+                sigms2k = Math.Round(sigms2k, 1);
+                double sigmzk = sigmazk(mum, msk, alf, sigms2k);
+                sigmzk = Math.Round(sigmzk, 1);
+                //усилие при свертке с утонением в конечн. стадии;
+                double pk = Pi * d1 * s1 * sigmzk;
+                pk = Math.Round(pk, 0);
+                Console.WriteLine("sigms = " + sigms2 + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmz + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pu + " kg");
+                Console.WriteLine("конечная стадия");
+                Console.WriteLine("sigms = " + sigms2k + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmzk + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pk + " kg");
+            }
+            Console.WriteLine("диам.верх. матр.= " + dm1);
+            Console.WriteLine("коэф. утон.верх. матр = " + ms1w);
+            Console.WriteLine("коэф. утон.ниж. матр = " + ms1n);
+            Console.WriteLine("угол конус.ниж.матр = " + alfnm);
+            Console.WriteLine("радиус конус.ниж.матр = " + rn);
+            Console.WriteLine("диам. конус.ниж.матр = " + dkmn);
+            Console.WriteLine("высота конус.ниж.матр = " + hmn);
+            Console.WriteLine("расст. между поясками матр = " + rast);
+            Console.WriteLine("sigmsn = " + sigmsn + " kg / mm^2");
+            Console.WriteLine("sigmzn = " + sigmzn + " kg / mm^2");
+            Console.WriteLine("усилие на нижней матр = " + pn + " kg");
+
+            Console.WriteLine("Двухкон.матр2 матр");
+            Console.WriteLine("Диам. верхнего конуса = " + dw);
+            Console.WriteLine("Диаметр нижнего конуса = " + dk);
+            Console.WriteLine("Высота верхнего конуса = " + hw);
+            Console.WriteLine("Высота нижнего конуса = " + hk);
+            Console.WriteLine("Угол верхнего конуса = " + alfw);
+            Console.WriteLine("Угол верхнего конуса = " + alfn);
+            Console.WriteLine("Радиус входн.верх конуса = " + rw);
+            Console.WriteLine("Радиус входн.верх конуса = " + rs);
+        }
+        //На вход: нарДиам, допуНарДиам, внутрДиам, допуВнутрДиам, высота, радиус, толщЛенты, верхДопТолщ, нижДопТолщ, Средний коеф. утонения, Коеф. утонения на верх. матр., 
+        //радиус вход. конуса нижн. матр
+        //На выход: усилие свертки, конечная стадия, sigms, sigmz, диам.верх. матр, коэф. утон.верх. матр, коэф. утон.ниж. матр
+        //угол конус.ниж.матр, радиус конус.ниж.матр, диам. конус.ниж.матр, высота конус.ниж.матр, расст. между поясками матр, sigmsn, sigmzn, усилие на нижней матр
+        // Диаметр входн.кромки конуса, Радиус входн.кромки конуса, Высота конуса, Угол конуса
+        public static void одноконМатрРадиус2матр()
+        {
+            // Get the input values.
+            double mum = 0.05;
+            double Pi = Math.PI;
+            double d0 = double.Parse(Console.ReadLine());
+            double d1 = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double dm1n = double.Parse(Console.ReadLine());
+            double rp = double.Parse(Console.ReadLine());
+            double s = double.Parse(Console.ReadLine());
+            double ms1 = double.Parse(Console.ReadLine());
+            double s1 = double.Parse(Console.ReadLine());
+            double rps = rp + s / 2;
+            double sigmb = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+            double sd = double.Parse(Console.ReadLine());
+
+            double ms1sr = Math.Sqrt(ms1);
+            Console.WriteLine("Средний коэф. утонен=" + ms1sr);
+
+            Console.WriteLine("Введи коэф. утонен. на верх. матр");
+            double ms1w = double.Parse(Console.ReadLine());
+
+            double ms1n;
+            //нижняя матрица
+            if (ms1w == 1)
+            {
+                ms1n = ms1;
+            }
+            else
+            {
+                ms1n = ms1 / ms1w;
+                ms1n = Math.Round(ms1n, 3);
+            }
+
+            // Set the coefficient of thinning of the upper matrix.
+            ms1 = ms1w;
+            s1 = s * ms1;
+
+            // Get the user input for the diameter of the punch.
+            double dp = double.Parse(Console.ReadLine());
+
+            // Calculate the diameter of the upper matrix.
+            double dm1;
+            if (ms1w == 1)
+            {
+                dm1 = dp + 1.5 * s1 / Math.Sqrt(md1);
+                d1 = (dm1 + dp) / 2;
+            }
+            else
+            {
+                d1 = dp + s1;
+                dm1 = dp + 2 * s1;
+            }
+            dm1 = Math.Round(dm1, 2);
+            md1 = d1 / d0;
+
+            // Calculate the angle of cone of the lower matrix.
+            double q = Math.Sqrt(2 * mum * Math.Log(1 / ms1n) * (1 - Math.Log(1 / ms1n)));
+            double alfan = Math.Asin(q);
+            double alfn = alfan * 180 / Pi;
+            alfn = Math.Round(alfn, 0);
+
+            // Get the user input for the radius of the inlet cone of the lower matrix.
+            Console.WriteLine("Введи радиус вход. конуса нижн. матр");
+            double rn = double.Parse(Console.ReadLine());
+
+            // Calculate the height of the inlet cone of the lower matrix.
+            double hmn = (dm1 - dm1n) / 2 / Math.Tan(alfan) + rn * (1 - Math.Sin(alfan));
+            double dkmn = dm1 + 2 * rn * (1 - Math.Sin(alfan)) * Math.Tan(alfan);
+            dkmn = Math.Round(dkmn, 1);
+            hmn = Math.Round(hmn, 1);
+
+            Console.WriteLine("Введи угол конуса верх. матрицы");
+            double alfa = double.Parse(Console.ReadLine());
+            double alf = Pi * alfa / 180;
+
+            //расстояние между матрицами
+            // Calculate the distance between the matrices.
+            double perw = 1 / Math.Pow(md1, 2) - 1 - 2.28 * rps / d1 + 0.56 * Math.Pow(rps / d1, 2);
+            double wtor = Math.Sqrt(1 - Math.Pow(ms1w, 2) + 2 * rps * (1 - ms1w) / s);
+            double tret = ms1w * (1 - ms1n) / Math.Tan(alfan) - (1 / md1 - Math.Pow(ms1w, 2)) / (4 * ms1w * Math.Tan(alf));
+            double rast = 0.25 * d1 * perw / ms1w + s * (wtor + tret);
+            rast = Math.Round(rast, 1);
+
+            // Calculate the geometry of the upper matrix
+            double dk = d1 * Math.Sqrt((1 / md1 * md1 - 1 - 2.28 * rps / d1 + 0.07 * alfa * rps / d1 + 0.56 * (rps / d1) * (rps / d1)) * Math.Sin(alf) + 1);
+            dk = Math.Round(dk, 1);
+            double hk = (dk - dm1) / 2 / Math.Tan(alf);
+            hk = Math.Round(hk, 1);
+            double md11 = dk / d0;
+            double a = md11 + sd;
+            double b = (1 - Math.Sin(alf)) * Math.Tan(alf);
+            double hm = (a * (1 - b) + b - sd * ms1 - md1) * d0 / (2 * Math.Tan(alf));
+            hm = Math.Round(hm, 1);
+            double c = hm - hk;
+            if (c < 0)
+            {
+                Console.WriteLine("высота матр. меньше высоты конуса");
+                return;
+            }
+            double dkm = dm1 + 2 * hm * Math.Tan(alf);
+            dkm = Math.Round(dkm, 1);
+            double md12 = d1 / dk;
+            double rw = (d0 - dk - s) / 2;
+            rw = Math.Round(rw, 1);
+            double psi = 1 - dk / d0;
+            double psisr = 1 - Math.Sqrt(md1);
+
+            double sigms = sigmb * Math.Pow((psisr / psir), (psir / (1 - psir)) / (1 - psir));
+            sigms = Math.Round(sigms, 1);
+            double sigmr = 1.1 * sigms * (1 + mum / Math.Tan(alf)) * Math.Log(1 / md12);
+            sigmr = Math.Round(sigmr, 1);
+            //усилие вытяжки на нижней матрице
+            double psisrn = 1 - 0.5 * md1 * ms1w * (1 + ms1n);
+            double sigmsn = sigmb * Math.Pow((psisrn / psir), (psir / (1 - psir)) / (1 - psir));
+            double sigmzn = sigmsn * (Math.Log(1 / ms1n) + alfan / 2 + mum * (1 - Math.Log(1 / ms1n) * Math.Log(1 / ms1n)) / alfan);
+            double sn = s * ms1w * ms1n;
+            double pn = Pi * (dp + sn) * sn * sigmzn;
+            pn = Math.Round(pn, 0);
+            sigmsn = Math.Round(sigmsn, 1);
+            sigmzn = Math.Round(sigmzn, 1);
+            if (ms1 == 1)
+            {
+                //усилие при свертке без утонения
+                double pbu = Pi * d1 * s * sigmr;
+                pbu = Math.Round(pbu, 0);
+                Console.WriteLine("sigms = " + sigms + " kg / mm^2");
+                Console.WriteLine("sigmr = " + sigmr + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pbu + " kg");
+            }
+            else
+            {
+                double sigms2 = sigmas2(sigmb, md1, ms1, psir);
+                sigms2 = Math.Round(sigms2, 1);
+                double sigmz = sigmaz(mum, sigmr, sigms2, alf, ms1);
+                sigmz = Math.Round(sigmz, 1);
+                double pu = Pi * d1 * s1 * sigmz;
+                //усилие при свертке с утонением;
+                pu = Math.Round(pu, 0);
+                double msk = ms1 * Math.Sqrt(md1);
+                //конечная стадия;
+                double sigmrk = 0;
+                double sigms2k = sigmas2(sigmb, md1, msk, psir);
+                sigms2k = Math.Round(sigms2k, 1);
+                double sigmzk = sigmazk(mum, msk, alf, sigms2k);
+                sigmzk = Math.Round(sigmzk, 1);
+                //усилие при свертке с утонением в конечн. стадии;
+                double pk = Pi * d1 * s1 * sigmzk;
+                pk = Math.Round(pk, 0);
+                Console.WriteLine("sigms = " + sigms2 + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmz + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pu + " kg");
+                Console.WriteLine("конечная стадия");
+                Console.WriteLine("sigms = " + sigms2k + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmzk + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pk + " kg");
+            }
+            Console.WriteLine("диам.верх. матр.= " + dm1);
+            Console.WriteLine("коэф. утон.верх. матр = " + ms1w);
+            Console.WriteLine("коэф. утон.ниж. матр = " + ms1n);
+            Console.WriteLine("угол конус.ниж.матр = " + alfn);
+            Console.WriteLine("радиус конус.ниж.матр = " + rn);
+            Console.WriteLine("диам. конус.ниж.матр = " + dkmn);
+            Console.WriteLine("высота конус.ниж.матр = " + hmn);
+            Console.WriteLine("расст. между поясками матр = " + rast);
+            Console.WriteLine("sigmsn = " + sigmsn + " kg / mm^2");
+            Console.WriteLine("sigmzn = " + sigmzn + " kg / mm^2");
+            Console.WriteLine("усилие на нижней матр = " + pn + " kg");
+
+            Console.WriteLine("Однокон.матр.с больш.радиусом через 2матр");
+            Console.WriteLine("Диам. конуса = " + dkm);
+            Console.WriteLine("Высота конуса = " + hm);
+            Console.WriteLine("Угол  конуса = " + alfa);
+            Console.WriteLine("Радиус конуса = " + rw);
+        }
+        //На вход: нарДиам, допуНарДиам, внутрДиам, допуВнутрДиам, высота, радиус, толщЛенты, верхДопТолщ, нижДопТолщ, радиус вход. конуса нижн. матр, коэф. утонен. на верх. матр
+        //радиус вход. конуса нижн. матр, Средний коэф. утонен
+        //На выход: усилие свертки, конечная стадия, sigms, sigmz, диам.верх. матр, коэф. утон.верх. матр, коэф. утон.ниж. матр, Радиус МАТРИЦЫ
+        //угол конус.ниж.матр, радиус конус.ниж.матр, диам. конус.ниж.матр, высота конус.ниж.матр, расст. между поясками матр, sigmsn, sigmzn, усилие на нижней матр
+        public static void радМатрПрижим2матр()
+        {
+            // Get the input values.
+            double mum = 0.05;
+            double Pi = Math.PI;
+            double d0 = double.Parse(Console.ReadLine());
+            double d1 = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double dm1n = double.Parse(Console.ReadLine());
+            double rp = double.Parse(Console.ReadLine());
+            double s = double.Parse(Console.ReadLine());
+            double ms1 = double.Parse(Console.ReadLine());
+            double rps = rp + s / 2;
+            double sigmb = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+            double sd = double.Parse(Console.ReadLine());
+            double ms1sr = Math.Sqrt(ms1);
+            Console.WriteLine("Средний коэф. утонен=" + ms1sr);
+            Console.WriteLine("Введи коэф. утонен. на верх. матр");
+            double ms1w = double.Parse(Console.ReadLine());
+            //нижняя матрица
+            double ms1n = ms1 / ms1w;
+            ms1n = Math.Round(ms1n, 3);
+
+            // Set the coefficient of thinning of the upper matrix.
+            ms1 = ms1w;
+            double s1 = s * ms1;
+            double dp = double.Parse(Console.ReadLine());
+            d1 = dp + s1;
+            //диаметр верхней матрицы
+            double dm1 = dp + 2 * s1;
+            dm1 = Math.Round(dm1, 2);
+            md1 = d1 / d0;
+            // угол кон. ниж. матр
+            double q = Math.Sqrt(2 * mum * Math.Log(1 / ms1n) * (1 - Math.Log(1 / ms1n)));
+            double alfan = Math.Asin(q);
+            double alfn = alfan * 180 / Pi;
+            alfn = Math.Round(alfn, 0);
+
+            Console.WriteLine("Введи радиус вход. конуса нижн. матр");
+            double rn = double.Parse(Console.ReadLine());
+
+            // Calculate the height of the inlet cone of the lower matrix.
+            double hmn = (dm1 - dm1n) / 2 / Math.Tan(alfan) + rn * (1 - Math.Sin(alfan));
+            double dkmn = dm1 + 2 * rn * (1 - Math.Sin(alfan)) * Math.Tan(alfan);
+            dkmn = Math.Round(dkmn, 1);
+            hmn = Math.Round(hmn, 1);
+
+            //верхней матрицы
+            double rms = 0.69 * d1 * (0.16 * Math.Sqrt(18.3 / md1 * md1 + 21.2 + 10.2 * (rps / d1) * (rps / d1) - 41.3 * rps / d1) - 1);
+            double rm = rms - s1 / 2;
+            rm = Math.Round(rm, 1);
+            double md11 = (d1 + 2 * rms) / d0;
+            double md12 = md1 / md11;
+            double alr = Math.Atan(Math.Sqrt((rm + s) * (rm + s) - (rm + s1) * (rm + s1)) / (rm + s1));
+            double fi = Math.PI / 2 - alr;
+            double al = alr / 2;
+
+            //расстояние между матрицами
+            double perw = 1 / Math.Pow(md1, 2) - 1 - 2.28 * rps / d1 + 0.56 * Math.Pow(rps / d1, 2);
+            double wtor = Math.Sqrt(1 - Math.Pow(ms1w, 2) + 2 * rps * (1 - ms1w) / s);
+            double tret;
+            if (ms1w == 1)
+            {
+                tret = 0;
+            }
+            else
+            {
+                tret = ms1w * (1 - ms1n) / Math.Tan(alfan) - (1 / md1 - Math.Pow(ms1w, 2)) / (4 * ms1w * Math.Tan(al));
+            }
+            double rast = 0.25 * d1 * perw / ms1w + s * (wtor + tret);
+            rast = Math.Round(rast, 1);
+
+            double psisr = 1 - Math.Sqrt(md1);
+            double sigms = sigmb * Math.Pow(psisr / psir, psir / (1 - psir)) / (1 - psir);
+            sigms = Math.Round(sigms, 1);
+            double a = Math.Log(1 / md1) + s / (4 * rm);
+            double b = 1 + 1.5 * mum;
+            double c = 0.2 * mum * b / md1;
+            double d = 1 - 18 * sd / (1 - md1);
+            double sigmr = 1.1 * sigms * a * b / (1 - c * d);
+            sigmr = Math.Round(sigmr, 1);
+            double psisrn = 1 - 0.5 * md1 * ms1w * (1 + ms1n);
+            double sigmsn = sigmb * Math.Pow(psisrn / psir, psir / (1 - psir)) / (1 - psir);
+            double sigmzn = sigmsn * (Math.Log(1 / ms1n) + alfan / 2 + mum * (1 - Math.Log(1 / ms1n) * Math.Log(1 / ms1n)) / alfan);
+            double sn = s * ms1w * ms1n;
+            double pn = Math.PI * (dp + sn) * sn * sigmzn;
+            pn = Math.Round(pn, 0);
+            sigmsn = Math.Round(sigmsn, 1);
+            sigmzn = Math.Round(sigmzn, 1);
+
+            if (ms1 == 1)
+            {
+                //усилие при свертке без утонения
+                double pbu = Pi * d1 * s * sigmr;
+                pbu = Math.Round(pbu, 0);
+                Console.WriteLine("sigms = " + sigms + " kg / mm^2");
+                Console.WriteLine("sigmr = " + sigmr + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pbu + " kg");
+            }
+            else
+            {
+                double sigms2 = sigmas2(sigmb, md1, ms1, psir);
+                sigms2 = Math.Round(sigms2, 1);
+                double sigmz = sigmaz(mum, sigmr, sigms2, al, ms1);
+                sigmz = Math.Round(sigmz, 1);
+                double pu = Pi * d1 * s1 * sigmz;
+                //усилие при свертке с утонением;
+                pu = Math.Round(pu, 0);
+                double msk = ms1 * Math.Sqrt(md1);
+                //конечная стадия;
+                double sigmrk = 0;
+                double sigms2k = sigmas2(sigmb, md1, msk, psir);
+                sigms2k = Math.Round(sigms2k, 1);
+                double sigmzk = sigmazk(mum, msk, al, sigms2k);
+                sigmzk = Math.Round(sigmzk, 1);
+                //усилие при свертке с утонением в конечн. стадии;
+                double pk = Pi * d1 * s1 * sigmzk;
+                pk = Math.Round(pk, 0);
+                Console.WriteLine("sigms = " + sigms2 + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmz + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pu + " kg");
+                Console.WriteLine("конечная стадия");
+                Console.WriteLine("sigms = " + sigms2k + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmzk + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pk + " kg");
+            }
+            Console.WriteLine("диам.верх. матр.= " + dm1);
+            Console.WriteLine("коэф. утон.верх. матр = " + ms1w);
+            Console.WriteLine("коэф. утон.ниж. матр = " + ms1n);
+            Console.WriteLine("угол конус.ниж.матр = " + alfn);
+            Console.WriteLine("радиус конус.ниж.матр = " + rn);
+            Console.WriteLine("диам. конус.ниж.матр = " + dkmn);
+            Console.WriteLine("высота конус.ниж.матр = " + hmn);
+            Console.WriteLine("расст. между поясками матр = " + rast);
+            Console.WriteLine("sigmsn = " + sigmsn + " kg / mm^2");
+            Console.WriteLine("sigmzn = " + sigmzn + " kg / mm^2");
+            Console.WriteLine("усилие на нижней матр = " + pn + " kg");
+
+            Console.WriteLine("Радиал. матрица с прижимом 2 матр");
+            if (sd < ((md11 - md1) / 20))
+            {
+                Console.WriteLine("Треб.плоск.и тор.прижим");
+            }
+            else
+            {
+                Console.WriteLine("Треб.плоск.и тор.прижим");
+            }
+            Console.WriteLine("Радиус матрицы = " + rm);
+        }
+        //На вход: нарДиам, допуНарДиам, внутрДиам, допуВнутрДиам, высота, радиус, толщЛенты, верхДопТолщ, нижДопТолщ, радиус вход. конуса нижн. матр, коэф. утонен. на верх. матр
+        //радиус вход. конуса нижн. матр, Средний коэф. утонен
+        //На выход: усилие свертки, конечная стадия, sigms, sigmz, диам.верх. матр, коэф. утон.верх. матр, коэф. утон.ниж. матр, Радиус МАТРИЦЫ
+        //угол конус.ниж.матр, радиус конус.ниж.матр, диам. конус.ниж.матр, высота конус.ниж.матр, расст. между поясками матр, sigmsn, sigmzn, усилие на нижней матр
+        public static void радМатрБезПриж2матр()
+        {
+            // Get the input values.
+            double mum = 0.05;
+            double Pi = Math.PI;
+            double d0 = double.Parse(Console.ReadLine());
+            double d1 = double.Parse(Console.ReadLine());
+            double md1 = double.Parse(Console.ReadLine());
+            double dm1n = double.Parse(Console.ReadLine());
+            double rp = double.Parse(Console.ReadLine());
+            double s = double.Parse(Console.ReadLine());
+            double ms1 = double.Parse(Console.ReadLine());
+            double ms1sr = Math.Sqrt(ms1);
+            Console.WriteLine("Средний коэф. утонен=" + ms1sr);
+            Console.WriteLine("Введи коэф. утонен. на верх. матр");
+            double ms1w = double.Parse(Console.ReadLine());
+            double rps = rp + s / 2;
+            double sigmb = double.Parse(Console.ReadLine());
+            double psir = double.Parse(Console.ReadLine());
+            double sd = double.Parse(Console.ReadLine());
+
+            //нижняя матрица
+            double ms1n = ms1 / ms1w;
+            ms1n = Math.Round(ms1n, 3);
+            ms1 = ms1w;
+            double s1 = s * ms1;
+            double dp = double.Parse(Console.ReadLine());
+            d1 = dp + s1;
+            //диаметр верхней матрицы
+            double dm1 = dp + 2 * s1;
+            dm1 = Math.Round(dm1, 2);
+            md1 = d1 / d0;
+            // угол кон. ниж. матр
+            double q = Math.Sqrt(2 * mum * Math.Log(1 / ms1n) * (1 - Math.Log(1 / ms1n)));
+            double alfan = Math.Asin(q);
+            double alfn = alfan * 180 / Pi;
+            alfn = Math.Round(alfn, 0);
+
+            Console.WriteLine("Введи радиус вход. конуса нижн. матр");
+            double rn = double.Parse(Console.ReadLine());
+            double hmn = (dm1 - dm1n) / 2 / Math.Tan(alfan) + rn * (1 - Math.Sin(alfan));
+            double dkmn = dm1 + 2 * rn * (1 - Math.Sin(alfan)) * Math.Tan(alfan);
+            dkmn = Math.Round(dkmn, 1);
+            hmn = Math.Round(hmn, 1);
+
+            //верхней матрицы
+            double rms = d1 * (1 - md1) / (2 * md1);
+            double rm = rms - s1 / 2;
+            rm = Math.Round(rm, 1);
+            double fig = 200 * (1 - md1 * (1 + 2.28 * rps / d1)) / (1 + md1 * (5 - 6 * md1));
+            double fi = fig * Pi / 180;
+            double md11 = md1 * (1 + 2 * rms * (1 - Math.Cos(fi)) / d1);
+            double md12 = md1 / md11;
+            double alr = Math.Atan(Math.Sqrt((rm + s) * (rm + s) - (rm + s1) * (rm + s1)) / (rm + s1));
+            double alf = alr / 2;
+
+            //расстояние между матрицами
+            double perw = 1 / Math.Pow(md1, 2) - 1 - 2.28 * rps / d1 + 0.56 * Math.Pow(rps / d1, 2);
+            double wtor = Math.Sqrt(1 - Math.Pow(ms1w, 2) + 2 * rps * (1 - ms1w) / s);
+            double tret;
+            if (ms1w == 1)
+            {
+                tret = 0;
+            }
+            else
+            {
+                tret = ms1w * (1 - ms1n) / Math.Tan(alfan) - (1 / md1 - Math.Pow(ms1w, 2)) / (4 * ms1w * Math.Tan(alf));
+            }
+            double rast = 0.25 * d1 * perw / ms1w + s * (wtor + tret);
+            rast = Math.Round(rast, 1);
+
+            double psisr = 1 - Math.Sqrt(md1);
+            double sigms = sigmb * Math.Pow(psisr / psir, psir / (1 - psir)) / (1 - psir);
+            sigms = Math.Round(sigms, 1);
+            double sigmr = 1.1 * sigms * (1 + mum * fig) * Math.Log(1 / md12);
+            sigmr = Math.Round(sigmr, 1);
+            double psisrn = 1 - 0.5 * md1 * ms1w * (1 + ms1n);
+            double sigmsn = sigmb * Math.Pow(psisrn / psir, psir / (1 - psir)) / (1 - psir);
+            double sigmzn = sigmsn * (Math.Log(1 / ms1n) + alfan / 2 + mum * (1 - Math.Log(1 / ms1n) * Math.Log(1 / ms1n)) / alfan);
+            double sn = s * ms1w * ms1n;
+            double pn = Math.PI * (dp + sn) * sn * sigmzn;
+            pn = Math.Round(pn, 0);
+            sigmsn = Math.Round(sigmsn, 1);
+            sigmzn = Math.Round(sigmzn, 1);
+
+            if (ms1 == 1)
+            {
+                //усилие при свертке без утонения
+                double pbu = Pi * d1 * s * sigmr;
+                pbu = Math.Round(pbu, 0);
+                Console.WriteLine("sigms = " + sigms + " kg / mm^2");
+                Console.WriteLine("sigmr = " + sigmr + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pbu + " kg");
+            }
+            else
+            {
+                double sigms2 = sigmas2(sigmb, md1, ms1, psir);
+                sigms2 = Math.Round(sigms2, 1);
+                double sigmz = sigmaz(mum, sigmr, sigms2, alf, ms1);
+                sigmz = Math.Round(sigmz, 1);
+                double pu = Pi * d1 * s1 * sigmz;
+                //усилие при свертке с утонением;
+                pu = Math.Round(pu, 0);
+                double msk = ms1 * Math.Sqrt(md1);
+                //конечная стадия;
+                double sigmrk = 0;
+                double sigms2k = sigmas2(sigmb, md1, msk, psir);
+                sigms2k = Math.Round(sigms2k, 1);
+                double sigmzk = sigmazk(mum, msk, alf, sigms2k);
+                sigmzk = Math.Round(sigmzk, 1);
+                //усилие при свертке с утонением в конечн. стадии;
+                double pk = Pi * d1 * s1 * sigmzk;
+                pk = Math.Round(pk, 0);
+                Console.WriteLine("sigms = " + sigms2 + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmz + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pu + " kg");
+                Console.WriteLine("конечная стадия");
+                Console.WriteLine("sigms = " + sigms2k + " kg / mm^2");
+                Console.WriteLine("sigmz = " + sigmzk + " kg / mm^2");
+                Console.WriteLine("усилие свертки = " + pk + " kg");
+            }
+            Console.WriteLine("диам.верх. матр.= " + dm1);
+            Console.WriteLine("коэф. утон.верх. матр = " + ms1w);
+            Console.WriteLine("коэф. утон.ниж. матр = " + ms1n);
+            Console.WriteLine("угол конус.ниж.матр = " + alfn);
+            Console.WriteLine("радиус конус.ниж.матр = " + rn);
+            Console.WriteLine("диам. конус.ниж.матр = " + dkmn);
+            Console.WriteLine("высота конус.ниж.матр = " + hmn);
+            Console.WriteLine("расст. между поясками матр = " + rast);
+            Console.WriteLine("sigmsn = " + sigmsn + " kg / mm^2");
+            Console.WriteLine("sigmzn = " + sigmzn + " kg / mm^2");
+            Console.WriteLine("усилие на нижней матр = " + pn + " kg");
+
+            Console.WriteLine("Радиал. матрица без прижима 2матр");
+            Console.WriteLine("Радиус матрицы = " + rm);
+        }
+        //На вход: диаметры пуансонов, диаметры нижних матриц, коэфф. утон верхней матр, коэфф. утон. нижней матр, суммарный коэфф. утон на операции
+        //На выход: Коэф утонений   
+        public static void koeffUton2матр()
+        {
+            int n = int.Parse(Console.ReadLine());
+
+            // Create arrays to store the diameters and coefficients
+            int[] dp = new int[n - 1];
+            int[] dm = new int[n - 1];
+            float[] msw = new float[n - 1];
+            float[] msn = new float[n - 1];
+            float[] ms = new float[n];
+
+            // Read the data from the console
+            for (int i = 0; i < n - 1; i++)
+            {
+                dp[i] = int.Parse(Console.ReadLine());
+                dm[i] = int.Parse(Console.ReadLine());
+            }
+
+            // Calculate the total coefficient of attenuation for each operation
+            for (int j = 0; j < n; j++)
+            {
+                ms[j] = msw[j] * msn[j];
+            }
+        }
+        //На вход: диамПредыдущейВыт, диамМатр, радиусМатр
+        //На выход: уголРадиалМатр
+        public double AngleOfRadialMatrix(double previousDiameter, double diameter, double radius)
+        {
+            double d1 = previousDiameter;
+            double d2 = diameter;
+            double r = radius;
+            double a = r - (d1 - d2) / 2;
+            double b = Math.Sqrt(r * r - a * a);
+            double c = (d1 - d2) / 2;
+            double alfa = Math.Atan(c / b);
+            alfa *= 180 / 3.1416;
+            return alfa;
+        }
+        //На вход: коэфВытяжки, уголКонусаМатр, коэфТрения, исходнаяТолщЛенты
+        //На выход: толщСтенкиКолпУДна
+        public double ThicknessOfConeWall(double drawRatio, double coneAngle, double frictionCoefficient, double initialThickness)
+        {
+            double md = drawRatio;
+            double alfa = coneAngle;
+            double Pi = 3.1416;
+            alfa *= Pi / 180;
+            double mu = frictionCoefficient;
+            double s0 = initialThickness;
+            double a = 1 + mu / Math.Tan(alfa);
+            double b = 1 / md - 1;
+            double c = 0.5 - 0.75 * a * b / (2 - 0.5 * a * b);
+            double s = s0 * Math.Pow(1 / md, c);
+            return s;
+        }
+        //На вход: Предельный коэф. утонения для стали и алюмю=0,4 для латуни=0,35, угол конусности матрицы, dn, deltan, dw. deltaw
+        //На выход: средний диаметр свёртки, толщина стенки свёртки, исходная толщина равная толщине дна
+        public void ВырВытяжкаСдвигом()
+        {
+            double dn = double.Parse(Console.ReadLine());
+            double deltan = double.Parse(Console.ReadLine());
+            double dw = double.Parse(Console.ReadLine());
+            double deltaw = double.Parse(Console.ReadLine());
+            double d1 = (dn + deltan / 2 + dw + deltaw) / 2;
+            double s1 = ((dn + deltan / 2) - (dw + deltaw));
+            double s0 = double.Parse(Console.ReadLine());
+            double sd1 = s1 / d1;
+            Console.WriteLine("Предельный коэф. утонения для стали и алюмю=0,4 для латуни=0,35");
+            Console.WriteLine("Введи угол конусности матрицы");
+            double alf = double.Parse(Console.ReadLine());
+            Console.WriteLine(sd1);
+            double kt1 = s0 / s1;
+            double al = 3.1416 * alf / 180;
+            double md1 = 1 / (1 + sd1 * (2 - 1 / kt1));
+            double m = 1 + (1 - md1 * md1) * kt1 * kt1 * Math.Tan(al) / (2 * sd1 * md1 * md1);
+            double ms1 = 1 / Math.Sqrt(m);
+            Console.WriteLine(ms1);
+            Console.WriteLine("штамп. сдвигом");
+        }
     }
 }
+
+
